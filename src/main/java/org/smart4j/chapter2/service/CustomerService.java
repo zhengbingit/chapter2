@@ -4,13 +4,10 @@ package org.smart4j.chapter2.service;
  * Created by zhengbinMac on 2017/3/25.
  */
 
-import javafx.scene.chart.PieChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smart4j.chapter2.helper.DatabaseHelper;
 import org.smart4j.chapter2.model.Customer;
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

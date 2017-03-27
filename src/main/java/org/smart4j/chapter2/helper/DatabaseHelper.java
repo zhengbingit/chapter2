@@ -1,5 +1,6 @@
 package org.smart4j.chapter2.helper;
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -9,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.smart4j.chapter2.util.CollectionUtil;
 import org.smart4j.chapter2.util.PropsUtil;
 
-import java.lang.ref.SoftReference;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,37 +23,36 @@ import java.util.Properties;
 public class DatabaseHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
 
-    private static final QueryRunner QUERY_RUNNER = new QueryRunner();
-
-    private static final String DRIVER;
-    private static final String URL;
-    private static final String USERNAME;
-    private static final String PASSWORD;
-
     // 线程连接
-    private static final ThreadLocal<Connection> CONNECTION_THREAD_LOCAL = new ThreadLocal<Connection>();
+    private static final ThreadLocal<Connection> CONNECTION_THREAD_LOCAL;
+    // DbUtils
+    private static final QueryRunner QUERY_RUNNER;
+    // 线程池
+    private static final BasicDataSource DATA_SOURCE;
 
     static {
-        Properties properties = PropsUtil.loadProps("config.properties");
-        DRIVER = properties.getProperty("jdbc.driver");
-        URL = properties.getProperty("jdbc.url");
-        USERNAME = properties.getProperty("jdbc.username");
-        PASSWORD = properties.getProperty("jdbc.password");
-        try {
-            Class.forName(DRIVER); // 加载驱动程序
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("can not load jdbc driver", e);
-        }
+        CONNECTION_THREAD_LOCAL = new ThreadLocal<Connection>();
+        QUERY_RUNNER = new QueryRunner();
+
+        Properties conf = PropsUtil.loadProps("config.properties");
+        // 设置连接池，使用 DBCP 来获取数据库连接
+        DATA_SOURCE = new BasicDataSource();
+        DATA_SOURCE.setDriverClassName(conf.getProperty("jdbc.driver"));
+        DATA_SOURCE.setUrl(conf.getProperty("jdbc.url"));
+        DATA_SOURCE.setUsername(conf.getProperty("jdbc.username"));
+        DATA_SOURCE.setPassword(conf.getProperty("jdbc.password"));
     }
 
     /**
      * 获取数据库连接
      */
     public static Connection getConnection() {
+        // 首先从 ThreadLocal 中获取
         Connection connection = CONNECTION_THREAD_LOCAL.get();
+        // 若不存在，则创建一个新的 Connection，并最终将其放入 ThreadLocal 中
         if (connection == null) {
             try {
-                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+                connection = DATA_SOURCE.getConnection();
             } catch (SQLException e) {
                 LOGGER.error("get connection failure", e);
             } finally {
@@ -62,22 +60,6 @@ public class DatabaseHelper {
             }
         }
         return connection;
-    }
-
-    /**
-     * 关闭数据库连接
-     */
-    public static void closeConnection() {
-        Connection conn = CONNECTION_THREAD_LOCAL.get();
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                LOGGER.error("connection close failure", e);
-            } finally {
-                CONNECTION_THREAD_LOCAL.set(conn);
-            }
-        }
     }
 
     /**
@@ -95,8 +77,6 @@ public class DatabaseHelper {
             entityList = QUERY_RUNNER.query(conn, sql, new BeanListHandler<T>(entityClass), params);
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
-        } finally {
-            closeConnection();
         }
         return entityList;
     }
@@ -117,8 +97,6 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             LOGGER.error("query entity failure", e);
             e.printStackTrace();
-        }finally {
-            closeConnection();
         }
         return entity;
     }
@@ -131,8 +109,6 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             LOGGER.error("query entity failure", e);
             e.printStackTrace();
-        }finally {
-            closeConnection();
         }
         return result;
     }
@@ -148,8 +124,6 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             LOGGER.error("execute update failure", e);
             e.printStackTrace();
-        }finally {
-            closeConnection();
         }
         return updateRows;
     }
