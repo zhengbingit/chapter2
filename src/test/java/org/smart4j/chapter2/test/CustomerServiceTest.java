@@ -13,7 +13,6 @@ import org.smart4j.chapter2.service.CustomerService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * 单元测试
@@ -33,8 +32,9 @@ public class CustomerServiceTest {
 
     @Test
     public void getCustomerListTest() {
-        List<Customer> customerList = customerService.getCustomerList("");
-        Assert.assertEquals(2, customerList);
+        List<Customer> customerList = customerService.getCustomerList();
+        System.out.println(customerList);
+        Assert.assertEquals(2, customerList.size());
     }
 
     @Test
@@ -70,4 +70,10 @@ public class CustomerServiceTest {
         Assert.assertTrue(result);
     }
 
+    @Test
+    public void test1() {
+        String sql = "update tablename set a=?, b=?, c=?,";
+        sql = sql.substring(0, sql.lastIndexOf(","));
+        System.out.println(sql);
+    }
 }
