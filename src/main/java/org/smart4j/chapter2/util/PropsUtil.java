@@ -9,11 +9,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Created by zhengbinMac on 2017/3/25.
- */
-
-/**
  * 属性文件工具类
+ *
+ * Created by zhengbinMac on 2017/3/25.
  */
 public class PropsUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(PropsUtil.class);

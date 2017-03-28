@@ -1,9 +1,5 @@
 package org.smart4j.chapter2.util;
 
-/**
- * Created by zhengbinMac on 2017/3/25.
- */
-
 import org.apache.commons.collections.MapUtils;
 
 import java.util.Collection;
@@ -11,6 +7,8 @@ import java.util.Map;
 
 /**
  * 集合工具类
+ *
+ * Created by zhengbinMac on 2017/3/25.
  */
 public class CollectionUtil {
     /**

@@ -18,7 +18,11 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by zhengbinMac on 2017/3/25.
+ * DbUtils 提供对 JDBC 的轻量级封装
+ *  通过 DbUtils 提供的 QueryRunner 对象可以面向实体（Entity）进行查询。
+ *  它的原理是：执行 SQL 语句并返回一个 ResultSet，随后通过反射去创建并初始化实体对象。
+ *
+ *  Created by zhengbinMac on 2017/3/25.
  */
 public class DatabaseHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseHelper.class);
@@ -31,7 +35,7 @@ public class DatabaseHelper {
     private static final BasicDataSource DATA_SOURCE;
 
     static {
-        CONNECTION_THREAD_LOCAL = new ThreadLocal<Connection>();
+        CONNECTION_THREAD_LOCAL = new ThreadLocal<>();
         QUERY_RUNNER = new QueryRunner();
 
         Properties conf = PropsUtil.loadProps("config.properties");
